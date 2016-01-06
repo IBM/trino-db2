@@ -1,6 +1,6 @@
 # Presto DB2 connector
 
-This is a plugin for Presto that allow you to use Oracle Jdbc Connection
+This is a plugin for Presto that allow you to use IBM DB2 Jdbc Connection
 
 ## Connection Configuration
 
@@ -22,5 +22,5 @@ $ mvn install:install-file \
 -DartifactId=db2jcc \
 -Dversion=4.14.113 \
 -Dpackaging=jar \
--Dfile=/path/to/ojdbc6.jar
+-Dfile=/path/to/db2jcc4-4.14.113.jar
 ```
