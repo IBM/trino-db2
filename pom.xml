@@ -21,12 +21,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.google.code.findbugs</groupId>
-			<artifactId>annotations</artifactId>
-			<version>2.0.3</version>
-		</dependency>
-
-		<dependency>
 			<groupId>io.airlift</groupId>
 			<artifactId>configuration</artifactId>
 		</dependency>
@@ -34,11 +28,6 @@
 		<dependency>
 			<groupId>io.airlift</groupId>
 			<artifactId>log</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
 		</dependency>
 
 		<dependency>
@@ -54,11 +43,6 @@
 		<dependency>
 			<groupId>io.airlift</groupId>
 			<artifactId>configuration</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
 		</dependency>
 
 		<dependency>
