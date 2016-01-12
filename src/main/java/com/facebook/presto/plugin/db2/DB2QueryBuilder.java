@@ -17,7 +17,6 @@ import com.facebook.presto.plugin.jdbc.JdbcColumnHandle;
 import com.facebook.presto.plugin.jdbc.QueryBuilder;
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.predicate.Domain;
-import com.facebook.presto.spi.predicate.Range;
 import com.facebook.presto.spi.predicate.TupleDomain;
 import com.facebook.presto.spi.type.BigintType;
 import com.facebook.presto.spi.type.BooleanType;
@@ -30,13 +29,9 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import io.airlift.log.Logger;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Strings.isNullOrEmpty;
-import static com.google.common.collect.Iterables.getOnlyElement;
 import static com.google.common.collect.Iterables.transform;
 
 public class DB2QueryBuilder extends QueryBuilder
@@ -96,80 +91,5 @@ public class DB2QueryBuilder extends QueryBuilder
             }
         }
         return builder.build();
-    }
-
-    private String toPredicate(String columnName, Domain domain, Type type)
-    {
-        checkArgument(domain.getType().isOrderable(), "Domain type must be orderable");
-
-        if (domain.getValues().isNone()) {
-            return domain.isNullAllowed() ? quote(columnName) + " IS NULL" : "FALSE";
-        }
-
-        if (domain.getValues().isAll()) {
-            return domain.isNullAllowed() ? "TRUE" : quote(columnName) + " IS NOT NULL";
-        }
-
-        List<String> disjuncts = new ArrayList<>();
-        List<Object> singleValues = new ArrayList<>();
-        for (Range range : domain.getValues().getRanges().getOrderedRanges()) {
-            checkState(!range.isAll()); // Already checked
-            if (range.isSingleValue()) {
-                singleValues.add(range.getLow().getValue());
-            }
-            else {
-                List<String> rangeConjuncts = new ArrayList<>();
-                if (!range.getLow().isLowerUnbounded()) {
-                    switch (range.getLow().getBound()) {
-                        case ABOVE:
-                            rangeConjuncts.add(toPredicate(columnName, ">", range.getLow().getValue(), type));
-                            break;
-                        case EXACTLY:
-                            rangeConjuncts.add(toPredicate(columnName, ">=", range.getLow().getValue(), type));
-                            break;
-                        case BELOW:
-                            throw new IllegalArgumentException("Low Marker should never use BELOW bound: " + range);
-                        default:
-                            throw new AssertionError("Unhandled bound: " + range.getLow().getBound());
-                    }
-                }
-                if (!range.getHigh().isUpperUnbounded()) {
-                    switch (range.getHigh().getBound()) {
-                        case ABOVE:
-                            throw new IllegalArgumentException("High Marker should never use ABOVE bound: " + range);
-                        case EXACTLY:
-                            rangeConjuncts.add(toPredicate(columnName, "<=", range.getHigh().getValue(), type));
-                            break;
-                        case BELOW:
-                            rangeConjuncts.add(toPredicate(columnName, "<", range.getHigh().getValue(), type));
-                            break;
-                        default:
-                            throw new AssertionError("Unhandled bound: " + range.getHigh().getBound());
-                    }
-                }
-                // If rangeConjuncts is null, then the range was ALL, which
-                // should already have been checked for
-                checkState(!rangeConjuncts.isEmpty());
-                disjuncts.add("(" + Joiner.on(" AND ").join(rangeConjuncts) + ")");
-            }
-        }
-
-        // Add back all of the possible single values either as an equality or
-        // an IN predicate
-        if (singleValues.size() == 1) {
-            disjuncts.add(toPredicate(columnName, "=", getOnlyElement(singleValues), type));
-        }
-        else if (singleValues.size() > 1) {
-            disjuncts.add(quote(columnName) + " IN ("
-                    + Joiner.on(",").join(transform(singleValues, QueryBuilder::encode)) + ")");
-        }
-
-        // Add nullability disjuncts
-        checkState(!disjuncts.isEmpty());
-        if (domain.isNullAllowed()) {
-            disjuncts.add(quote(columnName) + " IS NULL");
-        }
-
-        return "(" + Joiner.on(" OR ").join(disjuncts) + ")";
     }
 }
