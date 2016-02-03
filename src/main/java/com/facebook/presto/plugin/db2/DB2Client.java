@@ -15,7 +15,6 @@ package com.facebook.presto.plugin.db2;
 
 import com.facebook.presto.plugin.jdbc.BaseJdbcClient;
 import com.facebook.presto.plugin.jdbc.BaseJdbcConfig;
-import com.facebook.presto.plugin.jdbc.JdbcColumnHandle;
 import com.facebook.presto.plugin.jdbc.JdbcConnectorId;
 import com.facebook.presto.plugin.jdbc.JdbcSplit;
 import com.ibm.db2.jcc.DB2Driver;
@@ -25,7 +24,6 @@ import javax.inject.Inject;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -36,29 +34,26 @@ public class DB2Client extends BaseJdbcClient
     @Inject
     public DB2Client(JdbcConnectorId connectorId, BaseJdbcConfig config, DB2Config db2Config) throws SQLException
     {
-        super(connectorId, config, "", new DB2Driver());
+        super(connectorId, db2Config, "", new DB2Driver());
 
         // https://www-01.ibm.com/support/knowledgecenter/ssw_ibm_i_72/rzaha/conprop.htm
         // block size (aka fetch size), default 32
         connectionProperties.setProperty("block size", "512");
-    }
 
-    @Override
-    public String buildSql(JdbcSplit split, List<JdbcColumnHandle> columnHandles)
-    {
-        return new DB2QueryBuilder(identifierQuote).buildSql(split.getCatalogName(), split.getSchemaName(),
-                split.getTableName(), columnHandles, split.getTupleDomain());
+        // http://stackoverflow.com/questions/16910791/getting-error-code-4220-with-null-sql-state
+        System.setProperty("db2.jcc.charsetDecoderEncoder", "3");
     }
 
     @Override
     public Connection getConnection(JdbcSplit split)
             throws SQLException
     {
-        Properties props = toProperties(split.getConnectionProperties());
-        props.put("block size", "512");
-        Connection connection = driver.connect(split.getConnectionUrl(), props);
+        Connection connection = driver.connect(split.getConnectionUrl(), toProperties(split.getConnectionProperties()));
         try {
             connection.setReadOnly(true);
+            // TRANSACTION_READ_UNCOMMITTED = Uncommitted read
+            // http://www.ibm.com/developerworks/data/library/techarticle/dm-0509schuetz/
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
         }
         catch (SQLException e) {
             connection.close();

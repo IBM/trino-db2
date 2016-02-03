@@ -13,47 +13,21 @@
  */
 package com.facebook.presto.plugin.db2;
 
-import io.airlift.configuration.Config;
+import com.facebook.presto.plugin.jdbc.BaseJdbcConfig;
 
-public class DB2Config
+public class DB2Config extends BaseJdbcConfig
 {
-    private String user;
-    private String password;
-    private String url;
-
-    public String getUser()
-    {
-        return user;
-    }
-
-    public String getPassword()
-    {
-        return password;
-    }
-
-    public String getUrl()
-    {
-        return url;
-    }
-
-    @Config("db2.user")
-    public DB2Config setUser(String user)
-    {
-        this.user = user;
-        return this;
-    }
-
-    @Config("db2.password")
-    public DB2Config setPassword(String password)
-    {
-        this.password = password;
-        return this;
-    }
-
-    @Config("db2.url")
-    public DB2Config setUrl(String url)
-    {
-        this.url = url;
-        return this;
-    }
+    // private String user;
+    //
+    // @Config("db2.user")
+    // public DB2Config setUser(String user)
+    // {
+    // this.user = user;
+    // return this;
+    // }
+    //
+    // public String getUser()
+    // {
+    // return user;
+    // }
 }
