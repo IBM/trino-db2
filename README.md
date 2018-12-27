@@ -14,13 +14,3 @@ Create new properties file inside etc/catalog dir:
 ## Building Presto DB2 JDBC Plugin
 
     mvn clean install
-    
-## DB2 JDBC Driver
-```
-$ mvn install:install-file \
--DgroupId=com.ibm \
--DartifactId=db2jcc \
--Dversion=4.14.113 \
--Dpackaging=jar \
--Dfile=/path/to/db2jcc4-4.14.113.jar
-```

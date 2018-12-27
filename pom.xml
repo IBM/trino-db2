@@ -15,9 +15,9 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.ibm</groupId>
+			<groupId>com.ibm.db2.jcc</groupId>
 			<artifactId>db2jcc</artifactId>
-			<version>4.21.29</version>
+			<version>db2jcc4</version>
 		</dependency>
 
 		<dependency>
@@ -28,6 +28,11 @@
 		<dependency>
 			<groupId>io.airlift</groupId>
 			<artifactId>log</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
 		</dependency>
 
 		<dependency>
