@@ -28,6 +28,5 @@ public class DB2ClientModule implements Module
     {
         binder.bind(JdbcClient.class).to(DB2Client.class).in(Scopes.SINGLETON);
         configBinder(binder).bindConfig(BaseJdbcConfig.class);
-        configBinder(binder).bindConfig(DB2Config.class);
     }
 }

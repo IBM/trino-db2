@@ -32,9 +32,9 @@ public class DB2Client extends BaseJdbcClient
     private static final Logger log = Logger.get(DB2Client.class);
 
     @Inject
-    public DB2Client(JdbcConnectorId connectorId, BaseJdbcConfig config, DB2Config db2Config) throws SQLException
+    public DB2Client(JdbcConnectorId connectorId, BaseJdbcConfig config) throws SQLException
     {
-        super(connectorId, db2Config, "", new DB2Driver());
+        super(connectorId, config, "", new DB2Driver());
 
         // https://www-01.ibm.com/support/knowledgecenter/ssw_ibm_i_72/rzaha/conprop.htm
         // block size (aka fetch size), default 32
