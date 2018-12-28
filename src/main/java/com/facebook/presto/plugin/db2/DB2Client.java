@@ -18,7 +18,6 @@ import com.facebook.presto.plugin.jdbc.BaseJdbcConfig;
 import com.facebook.presto.plugin.jdbc.JdbcConnectorId;
 import com.facebook.presto.plugin.jdbc.JdbcSplit;
 import com.ibm.db2.jcc.DB2Driver;
-import io.airlift.log.Logger;
 
 import javax.inject.Inject;
 
@@ -29,8 +28,6 @@ import java.util.Properties;
 
 public class DB2Client extends BaseJdbcClient
 {
-    private static final Logger log = Logger.get(DB2Client.class);
-
     @Inject
     public DB2Client(JdbcConnectorId connectorId, BaseJdbcConfig config) throws SQLException
     {
