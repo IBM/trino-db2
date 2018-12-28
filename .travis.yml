@@ -6,11 +6,16 @@ env:
   - MAVEN_SKIP_CHECKS_AND_DOCS="-Dair.check.skip-all=true -Dmaven.javadoc.skip=true"
   - MAVEN_FAST_INSTALL="-DskipTests $MAVEN_SKIP_CHECKS_AND_DOCS -B -q -T C1"
 
+cache:
+  directories:
+  - $HOME/.m2/repository
+
 install:
 - mvn install $MAVEN_FAST_INSTALL
 
 script:
 - mvn test $MAVEN_SKIP_CHECKS_AND_DOCS -B
-cache:
-  directories:
-  - $HOME/.m2/repository
+
+before_cache:
+  # Make the cache stable between builds by removing build output
+  - rm -rf $HOME/.m2/repository/com/facebook/presto

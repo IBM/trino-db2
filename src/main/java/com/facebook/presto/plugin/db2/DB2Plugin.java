@@ -15,7 +15,8 @@ package com.facebook.presto.plugin.db2;
 
 import com.facebook.presto.plugin.jdbc.JdbcPlugin;
 
-public class DB2Plugin extends JdbcPlugin
+public class DB2Plugin
+        extends JdbcPlugin
 {
     public DB2Plugin()
     {

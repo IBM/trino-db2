@@ -21,13 +21,13 @@ import com.google.inject.Scopes;
 
 import static io.airlift.configuration.ConfigBinder.configBinder;
 
-public class DB2ClientModule implements Module
+public class DB2ClientModule
+        implements Module
 {
     @Override
     public void configure(Binder binder)
     {
         binder.bind(JdbcClient.class).to(DB2Client.class).in(Scopes.SINGLETON);
         configBinder(binder).bindConfig(BaseJdbcConfig.class);
-        configBinder(binder).bindConfig(DB2Config.class);
     }
 }
