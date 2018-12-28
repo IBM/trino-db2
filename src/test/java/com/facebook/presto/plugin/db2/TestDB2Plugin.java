@@ -29,5 +29,7 @@ public class TestDB2Plugin
         Plugin plugin = new DB2Plugin();
         ConnectorFactory factory = getOnlyElement(plugin.getConnectorFactories());
         factory.create("test", ImmutableMap.of("connection-url", "test"), new TestingConnectorContext());
+
+        System.out.println(factory);
     }
 }

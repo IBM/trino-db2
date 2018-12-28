@@ -21,7 +21,8 @@ import com.google.inject.Scopes;
 
 import static io.airlift.configuration.ConfigBinder.configBinder;
 
-public class DB2ClientModule implements Module
+public class DB2ClientModule
+        implements Module
 {
     @Override
     public void configure(Binder binder)
