@@ -27,7 +27,7 @@ deploy:
   provider: releases
   api_key: $DEPLOY_GITHUB_OAUTH_TOKEN
   file:
-  - target/presto-db2-${TRAVIS_TAG}.jar
+  - target/presto-db2-${TRAVIS_TAG}.zip
   - target/presto-db2-${TRAVIS_TAG}.pom
   skip_cleanup: true
   on:
