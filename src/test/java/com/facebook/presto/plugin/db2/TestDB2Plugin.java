@@ -18,9 +18,9 @@ import com.facebook.presto.spi.connector.ConnectorFactory;
 import com.facebook.presto.testing.TestingConnectorContext;
 import com.google.common.collect.ImmutableMap;
 import org.testng.annotations.Test;
-import org.testng.Assert;
 
 import static com.google.common.collect.Iterables.getOnlyElement;
+import static org.testng.Assert.assertEquals;
 
 public class TestDB2Plugin
 {
@@ -29,7 +29,7 @@ public class TestDB2Plugin
     {
         Plugin plugin = new DB2Plugin();
         ConnectorFactory factory = getOnlyElement(plugin.getConnectorFactories());
-        Assert.assertEquals(factory.getName(), "db2");
+        assertEquals(factory.getName(), "db2");
         factory.create("test", ImmutableMap.of("connection-url", "test"), new TestingConnectorContext());
     }
 }
