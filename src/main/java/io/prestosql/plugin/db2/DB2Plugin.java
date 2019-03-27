@@ -11,9 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.facebook.presto.plugin.db2;
+package io.prestosql.plugin.db2;
 
-import com.facebook.presto.plugin.jdbc.JdbcPlugin;
+import io.prestosql.plugin.jdbc.JdbcPlugin;
 
 public class DB2Plugin
         extends JdbcPlugin
