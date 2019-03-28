@@ -11,12 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.facebook.presto.plugin.db2;
+package io.prestosql.plugin.db2;
 
-import com.facebook.presto.spi.Plugin;
-import com.facebook.presto.spi.connector.ConnectorFactory;
-import com.facebook.presto.testing.TestingConnectorContext;
+import io.prestosql.spi.Plugin;
+import io.prestosql.spi.connector.ConnectorFactory;
+import io.prestosql.testing.TestingConnectorContext;
 import com.google.common.collect.ImmutableMap;
+
 import org.testng.annotations.Test;
 
 import static com.google.common.collect.Iterables.getOnlyElement;
