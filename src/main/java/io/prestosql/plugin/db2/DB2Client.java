@@ -31,20 +31,23 @@ public class DB2Client
         extends BaseJdbcClient
 {
     @Inject
-    public DB2Client(JdbcConnectorId connectorId, BaseJdbcConfig config) throws SQLException
+    public DB2Client(JdbcConnectorId connectorId, BaseJdbcConfig config, DB2JdbcConfig db2Config) throws SQLException
     {
-        super(connectorId, config, "", createDriverConnectionFactory(new DB2Driver(), config));
+        super(connectorId, config, "", createDriverConnectionFactory(new DB2Driver(), config, db2Config));
 
         // http://stackoverflow.com/questions/16910791/getting-error-code-4220-with-null-sql-state
         System.setProperty("db2.jcc.charsetDecoderEncoder", "3");
     }
 
-    private static DriverConnectionFactory createDriverConnectionFactory(Driver driver, BaseJdbcConfig config)
+    private static DriverConnectionFactory createDriverConnectionFactory(Driver driver, BaseJdbcConfig config, DB2JdbcConfig db2Config)
     {
         Properties connectionProperties = DriverConnectionFactory.basicConnectionProperties(config);
         // https://www-01.ibm.com/support/knowledgecenter/ssw_ibm_i_72/rzaha/conprop.htm
         // block size (aka fetch size), default 32
         connectionProperties.setProperty("block size", "512");
+        if (db2Config.isSslConnection()) {
+            connectionProperties.setProperty("sslConnection", String.valueOf(db2Config.isSslConnection()));
+        }
 
         return new DriverConnectionFactory(driver, config.getConnectionUrl(), connectionProperties);
     }

@@ -29,5 +29,6 @@ public class DB2ClientModule
     {
         binder.bind(JdbcClient.class).to(DB2Client.class).in(Scopes.SINGLETON);
         configBinder(binder).bindConfig(BaseJdbcConfig.class);
+        configBinder(binder).bindConfig(DB2JdbcConfig.class);
     }
 }
