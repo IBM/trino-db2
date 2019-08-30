@@ -13,11 +13,10 @@
  */
 package io.prestosql.plugin.db2;
 
+import com.google.common.collect.ImmutableMap;
 import io.prestosql.spi.Plugin;
 import io.prestosql.spi.connector.ConnectorFactory;
 import io.prestosql.testing.TestingConnectorContext;
-import com.google.common.collect.ImmutableMap;
-
 import org.testng.annotations.Test;
 
 import static com.google.common.collect.Iterables.getOnlyElement;

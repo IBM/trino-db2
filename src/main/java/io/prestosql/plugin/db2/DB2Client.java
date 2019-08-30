@@ -13,12 +13,12 @@
  */
 package io.prestosql.plugin.db2;
 
+import com.ibm.db2.jcc.DB2Driver;
 import io.prestosql.plugin.jdbc.BaseJdbcClient;
 import io.prestosql.plugin.jdbc.BaseJdbcConfig;
 import io.prestosql.plugin.jdbc.DriverConnectionFactory;
 import io.prestosql.plugin.jdbc.JdbcConnectorId;
 import io.prestosql.plugin.jdbc.JdbcSplit;
-import com.ibm.db2.jcc.DB2Driver;
 
 import javax.inject.Inject;
 

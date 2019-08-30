@@ -13,11 +13,11 @@
  */
 package io.prestosql.plugin.db2;
 
-import io.prestosql.plugin.jdbc.BaseJdbcConfig;
-import io.prestosql.plugin.jdbc.JdbcClient;
 import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.Scopes;
+import io.prestosql.plugin.jdbc.BaseJdbcConfig;
+import io.prestosql.plugin.jdbc.JdbcClient;
 
 import static io.airlift.configuration.ConfigBinder.configBinder;
 
