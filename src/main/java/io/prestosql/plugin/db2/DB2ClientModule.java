@@ -13,13 +13,21 @@
  */
 package io.prestosql.plugin.db2;
 
+import com.ibm.db2.jcc.DB2Driver;
 import com.google.inject.Binder;
 import com.google.inject.Module;
+import com.google.inject.Provides;
 import com.google.inject.Scopes;
+import com.google.inject.Singleton;
 import io.prestosql.plugin.jdbc.BaseJdbcConfig;
+import io.prestosql.plugin.jdbc.ConnectionFactory;
+import io.prestosql.plugin.jdbc.DriverConnectionFactory;
 import io.prestosql.plugin.jdbc.JdbcClient;
+import io.prestosql.plugin.jdbc.credential.CredentialProvider;
 
 import static io.airlift.configuration.ConfigBinder.configBinder;
+
+import java.util.Properties;
 
 public class DB2ClientModule
         implements Module
@@ -29,5 +37,17 @@ public class DB2ClientModule
     {
         binder.bind(JdbcClient.class).to(DB2Client.class).in(Scopes.SINGLETON);
         configBinder(binder).bindConfig(BaseJdbcConfig.class);
+    }
+    
+    @Provides
+    @Singleton
+    public static ConnectionFactory getConnectionFactory(BaseJdbcConfig config, CredentialProvider credentialProvider)
+    {
+    	Properties connectionProperties = new Properties();
+    	// https://www-01.ibm.com/support/knowledgecenter/ssw_ibm_i_72/rzaha/conprop.htm
+        // block size (aka fetch size), default 32
+        connectionProperties.setProperty("block size", "512");
+    	
+    	return new DriverConnectionFactory(new DB2Driver(), config.getConnectionUrl(), connectionProperties, credentialProvider);
     }
 }

@@ -16,44 +16,33 @@ package io.prestosql.plugin.db2;
 import com.ibm.db2.jcc.DB2Driver;
 import io.prestosql.plugin.jdbc.BaseJdbcClient;
 import io.prestosql.plugin.jdbc.BaseJdbcConfig;
-import io.prestosql.plugin.jdbc.DriverConnectionFactory;
-import io.prestosql.plugin.jdbc.JdbcConnectorId;
+import io.prestosql.plugin.jdbc.ConnectionFactory;
+import io.prestosql.plugin.jdbc.JdbcIdentity;
+import io.prestosql.plugin.jdbc.StatsCollecting;
 import io.prestosql.plugin.jdbc.JdbcSplit;
 
 import javax.inject.Inject;
 
 import java.sql.Connection;
-import java.sql.Driver;
 import java.sql.SQLException;
-import java.util.Properties;
 
 public class DB2Client
         extends BaseJdbcClient
 {
     @Inject
-    public DB2Client(JdbcConnectorId connectorId, BaseJdbcConfig config) throws SQLException
+    public DB2Client(BaseJdbcConfig config, @StatsCollecting ConnectionFactory connectionFactory) throws SQLException
     {
-        super(connectorId, config, "", createDriverConnectionFactory(new DB2Driver(), config));
+        super(config, "", connectionFactory);
 
         // http://stackoverflow.com/questions/16910791/getting-error-code-4220-with-null-sql-state
         System.setProperty("db2.jcc.charsetDecoderEncoder", "3");
     }
 
-    private static DriverConnectionFactory createDriverConnectionFactory(Driver driver, BaseJdbcConfig config)
-    {
-        Properties connectionProperties = DriverConnectionFactory.basicConnectionProperties(config);
-        // https://www-01.ibm.com/support/knowledgecenter/ssw_ibm_i_72/rzaha/conprop.htm
-        // block size (aka fetch size), default 32
-        connectionProperties.setProperty("block size", "512");
-
-        return new DriverConnectionFactory(driver, config.getConnectionUrl(), connectionProperties);
-    }
-
     @Override
-    public Connection getConnection(JdbcSplit split)
+    public Connection getConnection(JdbcIdentity identity, JdbcSplit split)
             throws SQLException
     {
-        Connection connection = super.getConnection(split);
+        Connection connection = super.getConnection(identity, split);
         try {
             // TRANSACTION_READ_UNCOMMITTED = Uncommitted read
             // http://www.ibm.com/developerworks/data/library/techarticle/dm-0509schuetz/
