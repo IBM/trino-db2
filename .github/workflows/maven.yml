@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       MAVEN_SKIP_CHECKS_AND_DOCS: -Dair.check.skip-all=true -Dmaven.javadoc.skip=true
-      MAVEN_FAST_INSTALL: -DskipTests $MAVEN_SKIP_CHECKS_AND_DOCS -B -q -T C1
+      MAVEN_FAST_INSTALL: -DskipTests -Dair.check.skip-all=true -Dmaven.javadoc.skip=true -B -q -T C1
     steps:
     - uses: actions/checkout@v1
 
