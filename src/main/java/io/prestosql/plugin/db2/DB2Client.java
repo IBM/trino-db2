@@ -19,11 +19,18 @@ import io.prestosql.plugin.jdbc.ConnectionFactory;
 import io.prestosql.plugin.jdbc.JdbcIdentity;
 import io.prestosql.plugin.jdbc.StatsCollecting;
 import io.prestosql.plugin.jdbc.JdbcSplit;
+import io.prestosql.plugin.jdbc.WriteMapping;
+import io.prestosql.spi.connector.ConnectorSession;
+import io.prestosql.spi.type.Type;
+import io.prestosql.spi.type.VarcharType;
 
 import javax.inject.Inject;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+
+import static io.prestosql.plugin.jdbc.StandardColumnMappings.varcharWriteFunction;
+import static io.prestosql.spi.type.Varchars.isVarcharType;
 
 public class DB2Client
         extends BaseJdbcClient
@@ -52,5 +59,33 @@ public class DB2Client
             throw e;
         }
         return connection;
+    }
+    
+    /**
+     * To map data types when generating SQL.
+     */
+    @Override
+    public WriteMapping toWriteMapping(ConnectorSession session, Type type)
+    {
+    	if (isVarcharType(type)) {
+            VarcharType varcharType = (VarcharType) type;
+            String dataType;
+            if (varcharType.isUnbounded()) {
+            	dataType = "VARCHAR(32672)";
+            }
+            else if (varcharType.getBoundedLength() > 32672) {
+                dataType = "CLOB(" + varcharType.getBoundedLength() + ")";
+            }
+            else if (varcharType.getBoundedLength() < 32672) {
+                dataType = "VARCHAR(" + varcharType.getBoundedLength() + ")";
+            }
+            else {
+            	// The maximum length of VARCHAR is 32672
+                dataType = "VARCHAR(32672)";
+            }
+            return WriteMapping.sliceMapping(dataType, varcharWriteFunction());
+        }
+    	
+    	return super.toWriteMapping(session, type);
     }
 }
