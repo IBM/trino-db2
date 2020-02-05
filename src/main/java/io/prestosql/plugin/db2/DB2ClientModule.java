@@ -21,10 +21,16 @@ import com.google.inject.Scopes;
 import com.google.inject.Singleton;
 import io.prestosql.plugin.jdbc.BaseJdbcConfig;
 import io.prestosql.plugin.jdbc.ConnectionFactory;
+import io.prestosql.plugin.jdbc.DecimalConfig;
+import io.prestosql.plugin.jdbc.DecimalSessionPropertiesProvider;
 import io.prestosql.plugin.jdbc.DriverConnectionFactory;
+import io.prestosql.plugin.jdbc.ForBaseJdbc;
 import io.prestosql.plugin.jdbc.JdbcClient;
+import io.prestosql.plugin.jdbc.SessionPropertiesProvider;
+import io.prestosql.plugin.jdbc.TypeHandlingJdbcConfig;
 import io.prestosql.plugin.jdbc.credential.CredentialProvider;
 
+import static com.google.inject.multibindings.Multibinder.newSetBinder;
 import static io.airlift.configuration.ConfigBinder.configBinder;
 
 import java.util.Properties;
@@ -35,17 +41,21 @@ public class DB2ClientModule
     @Override
     public void configure(Binder binder)
     {
-        binder.bind(JdbcClient.class).to(DB2Client.class).in(Scopes.SINGLETON);
+        binder.bind(JdbcClient.class).annotatedWith(ForBaseJdbc.class).to(DB2Client.class).in(Scopes.SINGLETON);
         configBinder(binder).bindConfig(BaseJdbcConfig.class);
+        configBinder(binder).bindConfig(TypeHandlingJdbcConfig.class);
+        configBinder(binder).bindConfig(DecimalConfig.class);
+        newSetBinder(binder, SessionPropertiesProvider.class).addBinding().to(DecimalSessionPropertiesProvider.class).in(Scopes.SINGLETON);
     }
     
     @Provides
     @Singleton
+    @ForBaseJdbc
     public static ConnectionFactory getConnectionFactory(BaseJdbcConfig config, CredentialProvider credentialProvider)
     {
     	Properties connectionProperties = new Properties();
     	// https://www-01.ibm.com/support/knowledgecenter/ssw_ibm_i_72/rzaha/conprop.htm
-        // block size (aka fetch size), default 32
+        // block size (a.k.a fetch size), default 32
         connectionProperties.setProperty("block size", "512");
     	
     	return new DriverConnectionFactory(new DB2Driver(), config.getConnectionUrl(), connectionProperties, credentialProvider);
