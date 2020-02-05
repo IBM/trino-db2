@@ -18,7 +18,6 @@ import io.prestosql.plugin.jdbc.BaseJdbcConfig;
 import io.prestosql.plugin.jdbc.ConnectionFactory;
 import io.prestosql.plugin.jdbc.JdbcIdentity;
 import io.prestosql.plugin.jdbc.JdbcSplit;
-import io.prestosql.plugin.jdbc.StatsCollecting;
 import io.prestosql.plugin.jdbc.WriteMapping;
 import io.prestosql.spi.PrestoException;
 import io.prestosql.spi.connector.ConnectorSession;
@@ -40,9 +39,9 @@ public class DB2Client
         extends BaseJdbcClient
 {
     @Inject
-    public DB2Client(BaseJdbcConfig config, @StatsCollecting ConnectionFactory connectionFactory) throws SQLException
+    public DB2Client(BaseJdbcConfig config, ConnectionFactory connectionFactory) throws SQLException
     {
-        super(config, "", connectionFactory);
+        super(config, "\"", connectionFactory);
 
         // http://stackoverflow.com/questions/16910791/getting-error-code-4220-with-null-sql-state
         System.setProperty("db2.jcc.charsetDecoderEncoder", "3");
@@ -84,7 +83,7 @@ public class DB2Client
                 dataType = "VARCHAR(" + varcharType.getBoundedLength() + ")";
             }
             else {
-            	// The maximum length of VARCHAR is 32672
+                // The maximum length of VARCHAR is 32672
                 dataType = "VARCHAR(32672)";
             }
             return WriteMapping.sliceMapping(dataType, varcharWriteFunction());
