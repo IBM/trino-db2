@@ -17,10 +17,12 @@ import io.prestosql.plugin.jdbc.BaseJdbcClient;
 import io.prestosql.plugin.jdbc.BaseJdbcConfig;
 import io.prestosql.plugin.jdbc.ConnectionFactory;
 import io.prestosql.plugin.jdbc.JdbcIdentity;
-import io.prestosql.plugin.jdbc.StatsCollecting;
 import io.prestosql.plugin.jdbc.JdbcSplit;
+import io.prestosql.plugin.jdbc.StatsCollecting;
 import io.prestosql.plugin.jdbc.WriteMapping;
+import io.prestosql.spi.PrestoException;
 import io.prestosql.spi.connector.ConnectorSession;
+import io.prestosql.spi.connector.SchemaTableName;
 import io.prestosql.spi.type.Type;
 import io.prestosql.spi.type.VarcharType;
 
@@ -29,8 +31,10 @@ import javax.inject.Inject;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import static io.prestosql.plugin.jdbc.JdbcErrorCode.JDBC_ERROR;
 import static io.prestosql.plugin.jdbc.StandardColumnMappings.varcharWriteFunction;
 import static io.prestosql.spi.type.Varchars.isVarcharType;
+import static java.lang.String.format;
 
 public class DB2Client
         extends BaseJdbcClient
@@ -86,6 +90,24 @@ public class DB2Client
             return WriteMapping.sliceMapping(dataType, varcharWriteFunction());
         }
     	
-    	return super.toWriteMapping(session, type);
+        return super.toWriteMapping(session, type);
+    }
+
+    @Override
+    protected void renameTable(JdbcIdentity identity, String catalogName, String schemaName, String tableName, SchemaTableName newTable)
+    {
+    	// TODO figure if it supports changing schema while renaming table
+
+        String sql = format(
+                "RENAME TABLE %s TO %s",
+                quoted(catalogName, schemaName, tableName),
+                quoted(newTable.getTableName()));
+
+        try (Connection connection = connectionFactory.openConnection(identity)) {
+            execute(connection, sql);
+        }
+        catch (SQLException e) {
+            throw new PrestoException(JDBC_ERROR, e);
+        }
     }
 }
