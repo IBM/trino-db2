@@ -1,4 +1,4 @@
-# Presto DB2 connector [![Build Status](https://travis-ci.org/IBM/presto-db2.svg?branch=master)](https://travis-ci.org/IBM/presto-db2)
+# Presto DB2 connector [![Actions Status](https://github.com/IBM/presto-db2/workflows/Java%20CI/badge.svg)](https://github.com/IBM/presto-db2/actions) [![Build Status](https://travis-ci.org/IBM/presto-db2.svg?branch=master)](https://travis-ci.org/IBM/presto-db2)
 
 This is a plugin for [Presto](https://prestosql.io/) that allow you to use IBM DB2 Jdbc Connection
 
