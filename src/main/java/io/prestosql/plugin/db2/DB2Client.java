@@ -35,6 +35,7 @@ import static io.prestosql.plugin.jdbc.JdbcErrorCode.JDBC_ERROR;
 import static io.prestosql.plugin.jdbc.StandardColumnMappings.varcharWriteFunction;
 import static io.prestosql.spi.type.Varchars.isVarcharType;
 import static java.lang.String.format;
+import static java.util.Locale.ENGLISH;
 
 public class DB2Client
         extends BaseJdbcClient
@@ -104,14 +105,16 @@ public class DB2Client
     @Override
     protected void renameTable(JdbcIdentity identity, String catalogName, String schemaName, String tableName, SchemaTableName newTable)
     {
-    	// TODO figure if it supports changing schema while renaming table
-
-        String sql = format(
-                "RENAME TABLE %s TO %s",
-                quoted(catalogName, schemaName, tableName),
-                quoted(newTable.getTableName()));
-
         try (Connection connection = connectionFactory.openConnection(identity)) {
+            String newTableName = newTable.getTableName();
+            if (connection.getMetaData().storesUpperCaseIdentifiers()) {
+                newTableName = newTableName.toUpperCase(ENGLISH);
+            }
+            // Specifies the new name for the table without a schema name
+            String sql = format(
+                    "RENAME TABLE %s TO %s",
+                    quoted(catalogName, schemaName, tableName),
+                    quoted(newTableName));
             execute(connection, sql);
         }
         catch (SQLException e) {
