@@ -43,6 +43,7 @@ public class DB2ClientModule
     {
         binder.bind(JdbcClient.class).annotatedWith(ForBaseJdbc.class).to(DB2Client.class).in(Scopes.SINGLETON);
         configBinder(binder).bindConfig(BaseJdbcConfig.class);
+        configBinder(binder).bindConfig(DB2Config.class);
         configBinder(binder).bindConfig(TypeHandlingJdbcConfig.class);
         configBinder(binder).bindConfig(DecimalConfig.class);
         newSetBinder(binder, SessionPropertiesProvider.class).addBinding().to(DecimalSessionPropertiesProvider.class).in(Scopes.SINGLETON);

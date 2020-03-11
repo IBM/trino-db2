@@ -19,6 +19,15 @@ For a connection with SSL, uses following JDBC URL strings as `connection-url`:
 
 See official document of DB2 JDBC details from the article [Connecting programmatically with JDBC](https://www.ibm.com/support/knowledgecenter/en/SS6NHC/com.ibm.swg.im.dashdb.doc/connecting/connect_connecting_jdbc_applications.html).
 
+## Configuration Properties
+
+
+| Property Name | Description |
+|---------------|-------------|
+|db2.varchar-max-length | max length of VARCHAR type in a CREATE TABLE or ALTER TABLE command. default is `32672`|
+
+**Notice**: you may need to customize value of `db2.varchar-max-length` to `32592` when using Db2 warehouse.
+
 ## _Extra credentials_ Support
 
 Since release `324`, it starts to support the idea of _extra credentials_ where it allows prestosql client user to provide DB2 username and password as extra credentials that are passed directly to the backend DB2 server when running a Presto query.
