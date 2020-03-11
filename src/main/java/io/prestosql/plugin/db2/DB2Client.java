@@ -23,6 +23,7 @@ import io.prestosql.spi.PrestoException;
 import io.prestosql.spi.connector.ConnectorSession;
 import io.prestosql.spi.connector.SchemaTableName;
 import io.prestosql.spi.type.Type;
+import io.prestosql.spi.type.TypeManager;
 import io.prestosql.spi.type.VarcharType;
 
 import javax.inject.Inject;
@@ -38,10 +39,17 @@ import static java.lang.String.format;
 public class DB2Client
         extends BaseJdbcClient
 {
+	private final int varcharMaxLength;
+
     @Inject
-    public DB2Client(BaseJdbcConfig config, ConnectionFactory connectionFactory) throws SQLException
+    public DB2Client(
+            BaseJdbcConfig config,
+            DB2Config db2config,
+            ConnectionFactory connectionFactory,
+            TypeManager typeManager) throws SQLException
     {
         super(config, "\"", connectionFactory);
+        this.varcharMaxLength = db2config.getVarcharMaxLength();
 
         // http://stackoverflow.com/questions/16910791/getting-error-code-4220-with-null-sql-state
         System.setProperty("db2.jcc.charsetDecoderEncoder", "3");
@@ -73,19 +81,20 @@ public class DB2Client
     	if (isVarcharType(type)) {
             VarcharType varcharType = (VarcharType) type;
             String dataType;
+            
             if (varcharType.isUnbounded()) {
-            	dataType = "VARCHAR(32672)";
+            	dataType = "VARCHAR(" + this.varcharMaxLength + ")";
             }
-            else if (varcharType.getBoundedLength() > 32672) {
+            else if (varcharType.getBoundedLength() > this.varcharMaxLength) {
                 dataType = "CLOB(" + varcharType.getBoundedLength() + ")";
             }
-            else if (varcharType.getBoundedLength() < 32672) {
+            else if (varcharType.getBoundedLength() < this.varcharMaxLength) {
                 dataType = "VARCHAR(" + varcharType.getBoundedLength() + ")";
             }
             else {
-                // The maximum length of VARCHAR is 32672
-                dataType = "VARCHAR(32672)";
+            	dataType = "VARCHAR(" + this.varcharMaxLength + ")";
             }
+
             return WriteMapping.sliceMapping(dataType, varcharWriteFunction());
         }
     	
