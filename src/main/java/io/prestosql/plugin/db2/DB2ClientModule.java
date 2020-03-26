@@ -52,12 +52,19 @@ public class DB2ClientModule
     @Provides
     @Singleton
     @ForBaseJdbc
-    public static ConnectionFactory getConnectionFactory(BaseJdbcConfig config, CredentialProvider credentialProvider)
+    public static ConnectionFactory getConnectionFactory(BaseJdbcConfig config, CredentialProvider credentialProvider, DB2Config db2Config)
     {
     	Properties connectionProperties = new Properties();
     	// https://www-01.ibm.com/support/knowledgecenter/ssw_ibm_i_72/rzaha/conprop.htm
         // block size (a.k.a fetch size), default 32
         connectionProperties.setProperty("block size", "512");
+        
+        // use IAM authentication when using API key
+        if (db2Config.getApiKey() != null) {
+        	connectionProperties.setProperty("apiKey", db2Config.getApiKey());
+        	connectionProperties.setProperty("securityMechanism", "15");
+        	connectionProperties.setProperty("pluginName", "IBMIAMauth");
+        }
     	
     	return new DriverConnectionFactory(new DB2Driver(), config.getConnectionUrl(), connectionProperties, credentialProvider);
     }
