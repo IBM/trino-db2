@@ -13,12 +13,12 @@
  */
 package io.prestosql.plugin.db2;
 
-import com.ibm.db2.jcc.DB2Driver;
 import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.Scopes;
 import com.google.inject.Singleton;
+import com.ibm.db2.jcc.DB2Driver;
 import io.prestosql.plugin.jdbc.BaseJdbcConfig;
 import io.prestosql.plugin.jdbc.ConnectionFactory;
 import io.prestosql.plugin.jdbc.DecimalConfig;
@@ -30,10 +30,10 @@ import io.prestosql.plugin.jdbc.SessionPropertiesProvider;
 import io.prestosql.plugin.jdbc.TypeHandlingJdbcConfig;
 import io.prestosql.plugin.jdbc.credential.CredentialProvider;
 
+import java.util.Properties;
+
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
 import static io.airlift.configuration.ConfigBinder.configBinder;
-
-import java.util.Properties;
 
 public class DB2ClientModule
         implements Module
@@ -48,24 +48,24 @@ public class DB2ClientModule
         configBinder(binder).bindConfig(DecimalConfig.class);
         newSetBinder(binder, SessionPropertiesProvider.class).addBinding().to(DecimalSessionPropertiesProvider.class).in(Scopes.SINGLETON);
     }
-    
+
     @Provides
     @Singleton
     @ForBaseJdbc
     public static ConnectionFactory getConnectionFactory(BaseJdbcConfig config, CredentialProvider credentialProvider, DB2Config db2Config)
     {
-    	Properties connectionProperties = new Properties();
-    	// https://www-01.ibm.com/support/knowledgecenter/ssw_ibm_i_72/rzaha/conprop.htm
+        Properties connectionProperties = new Properties();
+        // https://www-01.ibm.com/support/knowledgecenter/ssw_ibm_i_72/rzaha/conprop.htm
         // block size (a.k.a fetch size), default 32
         connectionProperties.setProperty("block size", "512");
-        
+
         // use IAM authentication when using API key
         if (db2Config.getApiKey() != null) {
-        	connectionProperties.setProperty("apiKey", db2Config.getApiKey());
-        	connectionProperties.setProperty("securityMechanism", "15");
-        	connectionProperties.setProperty("pluginName", "IBMIAMauth");
+            connectionProperties.setProperty("apiKey", db2Config.getApiKey());
+            connectionProperties.setProperty("securityMechanism", "15");
+            connectionProperties.setProperty("pluginName", "IBMIAMauth");
         }
-    	
-    	return new DriverConnectionFactory(new DB2Driver(), config.getConnectionUrl(), connectionProperties, credentialProvider);
+
+        return new DriverConnectionFactory(new DB2Driver(), config.getConnectionUrl(), connectionProperties, credentialProvider);
     }
 }

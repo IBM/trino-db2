@@ -40,7 +40,7 @@ import static java.util.Locale.ENGLISH;
 public class DB2Client
         extends BaseJdbcClient
 {
-	private final int varcharMaxLength;
+    private final int varcharMaxLength;
 
     @Inject
     public DB2Client(
@@ -72,19 +72,19 @@ public class DB2Client
         }
         return connection;
     }
-    
+
     /**
      * To map data types when generating SQL.
      */
     @Override
     public WriteMapping toWriteMapping(ConnectorSession session, Type type)
     {
-    	if (isVarcharType(type)) {
+        if (isVarcharType(type)) {
             VarcharType varcharType = (VarcharType) type;
             String dataType;
-            
+
             if (varcharType.isUnbounded()) {
-            	dataType = "VARCHAR(" + this.varcharMaxLength + ")";
+                dataType = "VARCHAR(" + this.varcharMaxLength + ")";
             }
             else if (varcharType.getBoundedLength() > this.varcharMaxLength) {
                 dataType = "CLOB(" + varcharType.getBoundedLength() + ")";
@@ -93,12 +93,12 @@ public class DB2Client
                 dataType = "VARCHAR(" + varcharType.getBoundedLength() + ")";
             }
             else {
-            	dataType = "VARCHAR(" + this.varcharMaxLength + ")";
+                dataType = "VARCHAR(" + this.varcharMaxLength + ")";
             }
 
             return WriteMapping.sliceMapping(dataType, varcharWriteFunction());
         }
-    	
+
         return super.toWriteMapping(session, type);
     }
 
