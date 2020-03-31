@@ -15,6 +15,7 @@ package io.prestosql.plugin.db2;
 
 import io.airlift.configuration.Config;
 import io.airlift.configuration.ConfigDescription;
+import io.airlift.configuration.ConfigSecuritySensitive;
 
 import javax.validation.constraints.Min;
 
@@ -22,6 +23,8 @@ public class DB2Config
 {
     // this value comes from the official document
     private int varcharMaxLength = 32672;
+    // this value is for IAM authentication
+    private String apiKey;
 
     @Min(1)
     public int getVarcharMaxLength()
@@ -34,6 +37,20 @@ public class DB2Config
     public DB2Config setVarcharMaxLength(int varcharMaxLength)
     {
         this.varcharMaxLength = varcharMaxLength;
+        return this;
+    }
+
+    public String getApiKey()
+    {
+        return apiKey;
+    }
+
+    @Config("db2.iam-api-key")
+    @ConfigSecuritySensitive
+    @ConfigDescription("API key for IAM authentication")
+    public DB2Config setApiKey(String apiKey)
+    {
+        this.apiKey = apiKey;
         return this;
     }
 }
