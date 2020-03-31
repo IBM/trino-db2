@@ -15,7 +15,9 @@ For a connection with SSL, uses following JDBC URL strings as `connection-url`:
 
     connection-url=jdbc:db2://ip:port/database:sslConnection=true;
 
-**Notice**: the trailing semi-colon is required. Or it will thrown SQLException `Invalid database URL syntax`.
+**Notices**:
+* the trailing semi-colon is required. Or it will thrown SQLException `Invalid database URL syntax`.
+* You can use `db2.iam-api-key` to specify API Key instead of user/password if IAM authentication is supported.
 
 See official document of DB2 JDBC details from the article [Connecting programmatically with JDBC](https://www.ibm.com/support/knowledgecenter/en/SS6NHC/com.ibm.swg.im.dashdb.doc/connecting/connect_connecting_jdbc_applications.html).
 
@@ -25,6 +27,7 @@ See official document of DB2 JDBC details from the article [Connecting programma
 | Property Name | Description |
 |---------------|-------------|
 |db2.varchar-max-length | max length of VARCHAR type in a CREATE TABLE or ALTER TABLE command. default is `32672`|
+|db2.iam-api-key | API Key of IBM Cloud IAM. Use this when choosing IAM authentication instead of user/password |
 
 **Notice**: you may need to customize value of `db2.varchar-max-length` to `32592` when using Db2 warehouse.
 
