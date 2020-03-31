@@ -30,12 +30,14 @@ import javax.inject.Inject;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 
 import static io.prestosql.plugin.jdbc.JdbcErrorCode.JDBC_ERROR;
 import static io.prestosql.plugin.jdbc.StandardColumnMappings.varcharWriteFunction;
 import static io.prestosql.spi.type.Varchars.isVarcharType;
 import static java.lang.String.format;
 import static java.util.Locale.ENGLISH;
+import static java.util.stream.Collectors.joining;
 
 public class DB2Client
         extends BaseJdbcClient
@@ -120,5 +122,19 @@ public class DB2Client
         catch (SQLException e) {
             throw new PrestoException(JDBC_ERROR, e);
         }
+    }
+
+    @Override
+    protected void copyTableSchema(Connection connection, String catalogName, String schemaName, String tableName, String newTableName, List<String> columnNames)
+            throws SQLException
+    {
+        String sql = format(
+                "CREATE TABLE %s AS (SELECT %s FROM %s) WITH NO DATA",
+                quoted(catalogName, schemaName, newTableName),
+                columnNames.stream()
+                        .map(this::quoted)
+                        .collect(joining(", ")),
+                quoted(catalogName, schemaName, tableName));
+        execute(connection, sql);
     }
 }
