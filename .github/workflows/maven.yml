@@ -26,4 +26,4 @@ jobs:
       run: mvn install $MAVEN_FAST_INSTALL
 
     - name: mvn test
-      run: mvn test $MAVEN_SKIP_CHECKS_AND_DOCS -B
+      run: mvn test -Dmaven.javadoc.skip=true -B
