@@ -126,7 +126,6 @@ public class DB2Client
 
     @Override
     protected void copyTableSchema(Connection connection, String catalogName, String schemaName, String tableName, String newTableName, List<String> columnNames)
-            throws SQLException
     {
         String sql = format(
                 "CREATE TABLE %s AS (SELECT %s FROM %s) WITH NO DATA",
