@@ -46,8 +46,8 @@
 		</dependency>
 
 		<dependency>
-				<groupId>javax.validation</groupId>
-				<artifactId>validation-api</artifactId>
+			<groupId>javax.validation</groupId>
+			<artifactId>validation-api</artifactId>
 		</dependency>
 
 		<!-- Presto SPI -->
@@ -70,10 +70,10 @@
 		</dependency>
 
 		<dependency>
-            <groupId>org.openjdk.jol</groupId>
-            <artifactId>jol-core</artifactId>
-            <scope>provided</scope>
-        </dependency>
+			<groupId>org.openjdk.jol</groupId>
+			<artifactId>jol-core</artifactId>
+			<scope>provided</scope>
+		</dependency>
 
 		<!-- for testing -->
 		<dependency>
