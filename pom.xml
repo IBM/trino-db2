@@ -15,9 +15,8 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.ibm.db2.jcc</groupId>
-			<artifactId>db2jcc</artifactId>
-			<version>db2jcc4</version>
+			<groupId>io.prestosql</groupId>
+			<artifactId>presto-base-jdbc</artifactId>
 		</dependency>
 
 		<dependency>
@@ -36,8 +35,9 @@
 		</dependency>
 
 		<dependency>
-		    <groupId>javax.validation</groupId>
-		    <artifactId>validation-api</artifactId>
+			<groupId>com.ibm.db2.jcc</groupId>
+			<artifactId>db2jcc</artifactId>
+			<version>db2jcc4</version>
 		</dependency>
 
 		<dependency>
@@ -46,8 +46,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>io.prestosql</groupId>
-			<artifactId>presto-base-jdbc</artifactId>
+				<groupId>javax.validation</groupId>
+				<artifactId>validation-api</artifactId>
 		</dependency>
 
 		<!-- Presto SPI -->
@@ -77,20 +77,14 @@
 
 		<!-- for testing -->
 		<dependency>
-			<groupId>org.testng</groupId>
-			<artifactId>testng</artifactId>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>io.airlift</groupId>
-			<artifactId>testing</artifactId>
+			<groupId>io.prestosql</groupId>
+			<artifactId>presto-main</artifactId>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>io.prestosql</groupId>
-			<artifactId>presto-main</artifactId>
+			<artifactId>presto-tests</artifactId>
 			<scope>test</scope>
 		</dependency>
 
@@ -107,8 +101,14 @@
 		</dependency>
 
 		<dependency>
-			<groupId>io.prestosql</groupId>
-			<artifactId>presto-tests</artifactId>
+			<groupId>io.airlift</groupId>
+			<artifactId>testing</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
