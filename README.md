@@ -50,3 +50,10 @@ See details from [this answer](https://stackoverflow.com/a/58634432/914967).
 ## Building Presto DB2 JDBC Plugin
 
     mvn clean install
+
+## Build a presto container image including this connector
+
+It use multi-stage build and the prestosql container image from community as the
+base image.
+
+    docker build -t "<name>/<tag>" --build-arg BASE="prestosql/presto:347" .
