@@ -37,8 +37,10 @@ import java.sql.Types;
 import java.util.List;
 import java.util.Optional;
 
+import static com.google.common.base.Verify.verify;
 import static io.prestosql.plugin.jdbc.JdbcErrorCode.JDBC_ERROR;
 import static io.prestosql.plugin.jdbc.StandardColumnMappings.timestampColumnMapping;
+import static io.prestosql.plugin.jdbc.StandardColumnMappings.timestampWriteFunction;
 import static io.prestosql.plugin.jdbc.StandardColumnMappings.varcharWriteFunction;
 import static io.prestosql.spi.type.TimestampType.createTimestampType;
 import static io.prestosql.spi.type.Varchars.isVarcharType;
@@ -50,6 +52,7 @@ public class DB2Client
         extends BaseJdbcClient
 {
     private final int varcharMaxLength;
+    private static final int DB2_MAX_SUPPORTED_TIMESTAMP_PRECISION = 12;
 
     @Inject
     public DB2Client(
@@ -123,6 +126,12 @@ public class DB2Client
             }
 
             return WriteMapping.sliceMapping(dataType, varcharWriteFunction());
+        }
+
+        if (type instanceof TimestampType) {
+            TimestampType timestampType = (TimestampType) type;
+            verify(timestampType.getPrecision() <= DB2_MAX_SUPPORTED_TIMESTAMP_PRECISION);
+            return WriteMapping.longMapping(format("TIMESTAMP(%s)", timestampType.getPrecision()), timestampWriteFunction(timestampType));
         }
 
         return super.toWriteMapping(session, type);
