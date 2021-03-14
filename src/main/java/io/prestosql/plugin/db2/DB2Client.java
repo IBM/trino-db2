@@ -39,7 +39,7 @@ import java.util.Optional;
 
 import static com.google.common.base.Verify.verify;
 import static io.prestosql.plugin.jdbc.JdbcErrorCode.JDBC_ERROR;
-import static io.prestosql.plugin.jdbc.StandardColumnMappings.timestampColumnMapping;
+import static io.prestosql.plugin.jdbc.StandardColumnMappings.timestampColumnMappingUsingSqlTimestamp;
 import static io.prestosql.plugin.jdbc.StandardColumnMappings.timestampWriteFunction;
 import static io.prestosql.plugin.jdbc.StandardColumnMappings.varcharWriteFunction;
 import static io.prestosql.spi.type.TimestampType.createTimestampType;
@@ -96,7 +96,7 @@ public class DB2Client
         if (typeHandle.getJdbcType() == Types.TIMESTAMP) {
             int decimalDigits = typeHandle.getRequiredDecimalDigits();
             TimestampType timestampType = createTimestampType(decimalDigits);
-            return Optional.of(timestampColumnMapping(timestampType));
+            return Optional.of(timestampColumnMappingUsingSqlTimestamp(timestampType));
         }
 
         return super.toPrestoType(session, connection, typeHandle);
