@@ -4,6 +4,8 @@ This is a plugin for [Presto](https://prestosql.io/) that allow you to connect t
 
 Notice that it requires the connected database to be Db2 10 or Db2 LUW 9.7+ or greater versions to meet the precision need of the timestamp data type.
 
+See [DEVELOPMENT](DEVELOPMENT.md) for information on development process.
+
 ## Connection Configuration
 
 Create new properties file like `<catalog-name>.properties` inside `etc/catalog` dir:
@@ -25,11 +27,10 @@ See the official document of DB2 JDBC details from the article [Connecting progr
 
 ## Configuration Properties
 
-
 | Property Name | Description |
 |---------------|-------------|
-|db2.varchar-max-length | max length of VARCHAR type in a CREATE TABLE or ALTER TABLE command. default is `32672`|
-|db2.iam-api-key | API Key of IBM Cloud IAM. Use this when choosing IAM authentication instead of user/password |
+|`db2.varchar-max-length` | max length of VARCHAR type in a CREATE TABLE or ALTER TABLE command. default is `32672`|
+|`db2.iam-api-key` | API Key of IBM Cloud IAM. Use this when choosing IAM authentication instead of user/password |
 
 **Notice**: you may need to customize value of `db2.varchar-max-length` to `32592` when using Db2 warehouse.
 
@@ -48,14 +49,3 @@ presto --extra-credential db2_user=user1 --extra-credential db2_password=secret
 ```
 
 See details from [this answer](https://stackoverflow.com/a/58634432/914967).
-
-## Building Presto DB2 JDBC Plugin
-
-    mvn clean install
-
-## Build a presto container image including this connector
-
-It use multi-stage build and the prestosql container image from community as the
-base image.
-
-    docker build -t "<name>/<tag>" --build-arg BASE="prestosql/presto:347" .
