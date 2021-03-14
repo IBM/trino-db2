@@ -1,6 +1,8 @@
 # Presto DB2 connector [![Actions Status](https://github.com/IBM/presto-db2/workflows/Java%20CI/badge.svg)](https://github.com/IBM/presto-db2/actions) [![Build Status](https://travis-ci.org/IBM/presto-db2.svg?branch=master)](https://travis-ci.org/IBM/presto-db2)
 
-This is a plugin for [Presto](https://prestosql.io/) that allow you to use IBM DB2 Jdbc Connection
+This is a plugin for [Presto](https://prestosql.io/) that allow you to connect to IBM Db2 database.
+
+Notice that it requires the connected database to be Db2 10 or Db2 LUW 9.7+ or greater versions to meet the precision need of the timestamp data type.
 
 ## Connection Configuration
 
@@ -16,10 +18,10 @@ For a connection with SSL, uses following JDBC URL strings as `connection-url`:
     connection-url=jdbc:db2://ip:port/database:sslConnection=true;
 
 **Notices**:
-* the trailing semi-colon is required. Or it will thrown SQLException `Invalid database URL syntax`.
+* the trailing semi-colon is required. Or it will throw SQLException `Invalid database URL syntax`.
 * You can use `db2.iam-api-key` to specify API Key instead of user/password if IAM authentication is supported.
 
-See official document of DB2 JDBC details from the article [Connecting programmatically with JDBC](https://www.ibm.com/support/knowledgecenter/en/SS6NHC/com.ibm.swg.im.dashdb.doc/connecting/connect_connecting_jdbc_applications.html).
+See the official document of DB2 JDBC details from the article [Connecting programmatically with JDBC](https://www.ibm.com/support/knowledgecenter/en/SS6NHC/com.ibm.swg.im.dashdb.doc/connecting/connect_connecting_jdbc_applications.html).
 
 ## Configuration Properties
 
