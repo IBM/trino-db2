@@ -17,7 +17,6 @@ import io.prestosql.plugin.jdbc.BaseJdbcClient;
 import io.prestosql.plugin.jdbc.BaseJdbcConfig;
 import io.prestosql.plugin.jdbc.ColumnMapping;
 import io.prestosql.plugin.jdbc.ConnectionFactory;
-import io.prestosql.plugin.jdbc.JdbcIdentity;
 import io.prestosql.plugin.jdbc.JdbcSplit;
 import io.prestosql.plugin.jdbc.JdbcTypeHandle;
 import io.prestosql.plugin.jdbc.WriteMapping;
@@ -43,7 +42,6 @@ import static io.prestosql.plugin.jdbc.StandardColumnMappings.timestampColumnMap
 import static io.prestosql.plugin.jdbc.StandardColumnMappings.timestampWriteFunction;
 import static io.prestosql.plugin.jdbc.StandardColumnMappings.varcharWriteFunction;
 import static io.prestosql.spi.type.TimestampType.createTimestampType;
-import static io.prestosql.spi.type.Varchars.isVarcharType;
 import static java.lang.String.format;
 import static java.util.Locale.ENGLISH;
 import static java.util.stream.Collectors.joining;
@@ -53,6 +51,7 @@ public class DB2Client
 {
     private final int varcharMaxLength;
     private static final int DB2_MAX_SUPPORTED_TIMESTAMP_PRECISION = 12;
+    private static final String VARCHAR_FORMAT = "VARCHAR(%d)";
 
     @Inject
     public DB2Client(
@@ -69,10 +68,10 @@ public class DB2Client
     }
 
     @Override
-    public Connection getConnection(JdbcIdentity identity, JdbcSplit split)
+    public Connection getConnection(ConnectorSession session, JdbcSplit split)
             throws SQLException
     {
-        Connection connection = super.getConnection(identity, split);
+        Connection connection = super.getConnection(session, split);
         try {
             // TRANSACTION_READ_UNCOMMITTED = Uncommitted read
             // http://www.ibm.com/developerworks/data/library/techarticle/dm-0509schuetz/
@@ -99,7 +98,7 @@ public class DB2Client
             return Optional.of(timestampColumnMappingUsingSqlTimestamp(timestampType));
         }
 
-        return super.toPrestoType(session, connection, typeHandle);
+        return super.legacyToPrestoType(session, connection, typeHandle);
     }
 
     /**
@@ -108,21 +107,21 @@ public class DB2Client
     @Override
     public WriteMapping toWriteMapping(ConnectorSession session, Type type)
     {
-        if (isVarcharType(type)) {
+        if (type instanceof VarcharType) {
             VarcharType varcharType = (VarcharType) type;
             String dataType;
 
             if (varcharType.isUnbounded()) {
-                dataType = "VARCHAR(" + this.varcharMaxLength + ")";
+                dataType = format(VARCHAR_FORMAT, this.varcharMaxLength);
             }
             else if (varcharType.getBoundedLength() > this.varcharMaxLength) {
-                dataType = "CLOB(" + varcharType.getBoundedLength() + ")";
+                dataType = format("CLOB(%d)", varcharType.getBoundedLength());
             }
             else if (varcharType.getBoundedLength() < this.varcharMaxLength) {
-                dataType = "VARCHAR(" + varcharType.getBoundedLength() + ")";
+                dataType = format(VARCHAR_FORMAT, varcharType.getBoundedLength());
             }
             else {
-                dataType = "VARCHAR(" + this.varcharMaxLength + ")";
+                dataType = format(VARCHAR_FORMAT, this.varcharMaxLength);
             }
 
             return WriteMapping.sliceMapping(dataType, varcharWriteFunction());
@@ -134,13 +133,13 @@ public class DB2Client
             return WriteMapping.longMapping(format("TIMESTAMP(%s)", timestampType.getPrecision()), timestampWriteFunction(timestampType));
         }
 
-        return super.toWriteMapping(session, type);
+        return super.legacyToWriteMapping(session, type);
     }
 
     @Override
-    protected void renameTable(JdbcIdentity identity, String catalogName, String schemaName, String tableName, SchemaTableName newTable)
+    protected void renameTable(ConnectorSession session, String catalogName, String schemaName, String tableName, SchemaTableName newTable)
     {
-        try (Connection connection = connectionFactory.openConnection(identity)) {
+        try (Connection connection = connectionFactory.openConnection(session)) {
             String newTableName = newTable.getTableName();
             if (connection.getMetaData().storesUpperCaseIdentifiers()) {
                 newTableName = newTableName.toUpperCase(ENGLISH);
