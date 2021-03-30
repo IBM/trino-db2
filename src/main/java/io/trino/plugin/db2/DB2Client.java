@@ -15,13 +15,15 @@ package io.trino.plugin.db2;
 
 import io.trino.plugin.jdbc.BaseJdbcClient;
 import io.trino.plugin.jdbc.BaseJdbcConfig;
+import io.trino.plugin.jdbc.ColumnMapping;
 import io.trino.plugin.jdbc.ConnectionFactory;
-import io.trino.plugin.jdbc.JdbcIdentity;
 import io.trino.plugin.jdbc.JdbcSplit;
+import io.trino.plugin.jdbc.JdbcTypeHandle;
 import io.trino.plugin.jdbc.WriteMapping;
 import io.trino.spi.TrinoException;
 import io.trino.spi.connector.ConnectorSession;
 import io.trino.spi.connector.SchemaTableName;
+import io.trino.spi.type.TimestampType;
 import io.trino.spi.type.Type;
 import io.trino.spi.type.TypeManager;
 import io.trino.spi.type.VarcharType;
@@ -34,9 +36,12 @@ import java.sql.Types;
 import java.util.List;
 import java.util.Optional;
 
+import static com.google.common.base.Verify.verify;
 import static io.trino.plugin.jdbc.JdbcErrorCode.JDBC_ERROR;
+import static io.trino.plugin.jdbc.StandardColumnMappings.timestampColumnMappingUsingSqlTimestampWithRounding;
+import static io.trino.plugin.jdbc.StandardColumnMappings.timestampWriteFunction;
 import static io.trino.plugin.jdbc.StandardColumnMappings.varcharWriteFunction;
-import static io.trino.spi.type.Varchars.isVarcharType;
+import static io.trino.spi.type.TimestampType.createTimestampType;
 import static java.lang.String.format;
 import static java.util.Locale.ENGLISH;
 import static java.util.stream.Collectors.joining;
@@ -81,7 +86,7 @@ public class DB2Client
     }
 
     @Override
-    public Optional<ColumnMapping> toPrestoType(ConnectorSession session, Connection connection, JdbcTypeHandle typeHandle)
+    public Optional<ColumnMapping> toColumnMapping(ConnectorSession session, Connection connection, JdbcTypeHandle typeHandle)
     {
         Optional<ColumnMapping> mapping = getForcedMappingToVarchar(typeHandle);
         if (mapping.isPresent()) {
@@ -91,7 +96,7 @@ public class DB2Client
         if (typeHandle.getJdbcType() == Types.TIMESTAMP) {
             int decimalDigits = typeHandle.getRequiredDecimalDigits();
             TimestampType timestampType = createTimestampType(decimalDigits);
-            return Optional.of(timestampColumnMappingUsingSqlTimestamp(timestampType));
+            return Optional.of(timestampColumnMappingUsingSqlTimestampWithRounding((timestampType)));
         }
 
         return super.legacyToPrestoType(session, connection, typeHandle);
