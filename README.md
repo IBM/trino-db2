@@ -2,6 +2,10 @@
 
 This is a plugin for [Trino](https://trino.io/) that allow you to use IBM Db2 Jdbc Connection
 
+Notice that it requires the connected database to be Db2 10 or Db2 LUW 9.7+ or greater versions to meet the precision need of the timestamp data type.
+
+See [DEVELOPMENT](DEVELOPMENT.md) for information on development process.
+
 ## Connection Configuration
 
 Create new properties file like `<catalog-name>.properties` inside `etc/catalog` dir:

@@ -6,11 +6,11 @@
 	<parent>
 		<groupId>io.trino</groupId>
 		<artifactId>trino-root</artifactId>
-		<version>352</version>
+		<version>354</version>
 	</parent>
 
 	<artifactId>trino-db2</artifactId>
-	<description>Trino - DB2 Connector</description>
+	<description>Trino - Db2 Connector</description>
 	<packaging>trino-plugin</packaging>
 
 	<dependencies>
