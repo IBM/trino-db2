@@ -4,6 +4,8 @@ on:
   push:
     paths-ignore:
       - '**.md'
+    tags:
+    - 'pre-*'
   pull_request:
     paths-ignore:
       - '**.md'
@@ -32,3 +34,14 @@ jobs:
 
     - name: mvn test
       run: mvn test -Dmaven.javadoc.skip=true -B
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        java-version: 11
+        files: |
+          target/trino-db2-${{ github.name }}.zip
+          target/trino-db2-${{ github.name }}.pom
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
