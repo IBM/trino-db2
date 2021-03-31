@@ -1,4 +1,4 @@
-# Trino Db2 connector [![Actions Status](https://github.com/IBM/presto-db2/workflows/Java%20CI/badge.svg)](https://github.com/IBM/presto-db2/actions) [![Build Status](https://travis-ci.org/IBM/presto-db2.svg?branch=master)](https://travis-ci.org/IBM/presto-db2)
+# Trino Db2 connector [![Actions Status](https://github.com/IBM/trino-db2/workflows/Java%20CI/badge.svg)](https://github.com/IBM/trino-db2/actions)
 
 This is a plugin for [Trino](https://trino.io/) that allow you to use IBM Db2 Jdbc Connection
 
@@ -36,7 +36,7 @@ See the official document of Db2 JDBC details from the article [Connecting progr
 
 ## _Extra credentials_ Support
 
-Since release `324`, it starts to support the idea of _extra credentials_ where it allows trino client user to provide DB2 username and password as extra credentials that are passed directly to the backend DB2 server when running a Presto query.
+Since release `324`, it starts to support the idea of _extra credentials_ where it allows trino client user to provide Db2 username and password as extra credentials that are passed directly to the backend Db2 server when running a query.
 
 1. configure this for the Db2 connector catalog properties file:
 ```
@@ -45,7 +45,7 @@ password-credential-name=db2_password
 ```
 2. passing credentials directly to Db2 server:
 ```
-presto --extra-credential db2_user=user1 --extra-credential db2_password=secret
+trino --extra-credential db2_user=user1 --extra-credential db2_password=secret
 ```
 
 See details from [this answer](https://stackoverflow.com/a/58634432/914967).
