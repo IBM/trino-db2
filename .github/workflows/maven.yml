@@ -35,11 +35,9 @@ jobs:
 
     - name: Release
       uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
+      if: startsWith(github.ref, 'refs/tags/') && ${{ matrix.java-version == '11' }}
       with:
-        java-version: 11
         files: |
-          target/trino-db2-${{ github.name }}.zip
-          target/trino-db2-${{ github.name }}.pom
+          target/trino-db2-*.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
