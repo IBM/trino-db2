@@ -32,3 +32,12 @@ jobs:
 
     - name: mvn test
       run: mvn test -Dmaven.javadoc.skip=true -B
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.java-version == '11' }}
+      with:
+        files: |
+          target/trino-db2-*.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
