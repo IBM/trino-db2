@@ -38,9 +38,10 @@ import java.util.Optional;
 
 import static com.google.common.base.Verify.verify;
 import static io.trino.plugin.jdbc.JdbcErrorCode.JDBC_ERROR;
-import static io.trino.plugin.jdbc.StandardColumnMappings.timestampColumnMappingUsingSqlTimestampWithRounding;
+import static io.trino.plugin.jdbc.StandardColumnMappings.timestampColumnMapping;
 import static io.trino.plugin.jdbc.StandardColumnMappings.timestampWriteFunction;
 import static io.trino.plugin.jdbc.StandardColumnMappings.varcharWriteFunction;
+import static io.trino.spi.type.TimestampType.TIMESTAMP_MILLIS;
 import static io.trino.spi.type.TimestampType.createTimestampType;
 import static java.lang.String.format;
 import static java.util.Locale.ENGLISH;
@@ -92,11 +93,18 @@ public class DB2Client
         if (mapping.isPresent()) {
             return mapping;
         }
-        // Support precision of TIMESTAMP
-        if (typeHandle.getJdbcType() == Types.TIMESTAMP) {
-            int decimalDigits = typeHandle.getRequiredDecimalDigits();
-            TimestampType timestampType = createTimestampType(decimalDigits);
-            return Optional.of(timestampColumnMappingUsingSqlTimestampWithRounding((timestampType)));
+
+        switch (typeHandle.getJdbcType()) {
+            case Types.TIMESTAMP:
+                TimestampType timestampType;
+                Optional<Integer> decimalDigits = typeHandle.getDecimalDigits();
+                if (decimalDigits.isPresent()) {
+                    timestampType = createTimestampType(decimalDigits.get());
+                }
+                else {
+                    timestampType = TIMESTAMP_MILLIS;
+                }
+                return Optional.of(timestampColumnMapping(timestampType));
         }
 
         return super.legacyToPrestoType(session, connection, typeHandle);
