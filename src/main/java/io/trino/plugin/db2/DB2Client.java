@@ -42,7 +42,6 @@ import static io.trino.plugin.jdbc.StandardColumnMappings.timestampColumnMapping
 import static io.trino.plugin.jdbc.StandardColumnMappings.timestampWriteFunction;
 import static io.trino.plugin.jdbc.StandardColumnMappings.varcharWriteFunction;
 import static io.trino.spi.type.TimestampType.TIMESTAMP_MILLIS;
-import static io.trino.spi.type.TimestampType.createTimestampType;
 import static java.lang.String.format;
 import static java.util.Locale.ENGLISH;
 import static java.util.stream.Collectors.joining;
@@ -96,14 +95,9 @@ public class DB2Client
 
         switch (typeHandle.getJdbcType()) {
             case Types.TIMESTAMP:
-                TimestampType timestampType;
-                Optional<Integer> decimalDigits = typeHandle.getDecimalDigits();
-                if (decimalDigits.isPresent()) {
-                    timestampType = createTimestampType(decimalDigits.get());
-                }
-                else {
-                    timestampType = TIMESTAMP_MILLIS;
-                }
+                TimestampType timestampType = typeHandle.getDecimalDigits()
+                        .map(TimestampType::createTimestampType)
+                        .orElse(TIMESTAMP_MILLIS);
                 return Optional.of(timestampColumnMapping(timestampType));
         }
 
