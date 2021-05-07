@@ -44,6 +44,7 @@ import static com.google.common.base.Verify.verify;
 import static io.trino.plugin.jdbc.JdbcErrorCode.JDBC_ERROR;
 import static io.trino.plugin.jdbc.StandardColumnMappings.longTimestampWriteFunction;
 import static io.trino.plugin.jdbc.StandardColumnMappings.timestampWriteFunction;
+import static io.trino.plugin.jdbc.StandardColumnMappings.timestampWriteFunctionUsingSqlTimestamp;
 import static io.trino.plugin.jdbc.StandardColumnMappings.toLongTimestamp;
 import static io.trino.plugin.jdbc.StandardColumnMappings.toTrinoTimestamp;
 import static io.trino.plugin.jdbc.StandardColumnMappings.varcharWriteFunction;
@@ -118,7 +119,7 @@ public class DB2Client
             return ColumnMapping.longMapping(
                     timestampType,
                     timestampReadFunction(timestampType),
-                    timestampWriteFunction(timestampType));
+                    timestampWriteFunctionUsingSqlTimestamp(timestampType));
         }
         checkArgument(timestampType.getPrecision() <= MAX_LOCAL_DATE_TIME_PRECISION, "Precision is out of range: %s", timestampType.getPrecision());
         return ColumnMapping.objectMapping(
