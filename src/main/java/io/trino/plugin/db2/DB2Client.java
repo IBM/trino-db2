@@ -19,10 +19,13 @@ import io.trino.plugin.jdbc.ColumnMapping;
 import io.trino.plugin.jdbc.ConnectionFactory;
 import io.trino.plugin.jdbc.JdbcSplit;
 import io.trino.plugin.jdbc.JdbcTypeHandle;
+import io.trino.plugin.jdbc.LongReadFunction;
+import io.trino.plugin.jdbc.ObjectReadFunction;
 import io.trino.plugin.jdbc.WriteMapping;
 import io.trino.spi.TrinoException;
 import io.trino.spi.connector.ConnectorSession;
 import io.trino.spi.connector.SchemaTableName;
+import io.trino.spi.type.LongTimestamp;
 import io.trino.spi.type.TimestampType;
 import io.trino.spi.type.Type;
 import io.trino.spi.type.TypeManager;
@@ -36,10 +39,13 @@ import java.sql.Types;
 import java.util.List;
 import java.util.Optional;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Verify.verify;
 import static io.trino.plugin.jdbc.JdbcErrorCode.JDBC_ERROR;
-import static io.trino.plugin.jdbc.StandardColumnMappings.timestampColumnMapping;
+import static io.trino.plugin.jdbc.StandardColumnMappings.longTimestampWriteFunction;
 import static io.trino.plugin.jdbc.StandardColumnMappings.timestampWriteFunction;
+import static io.trino.plugin.jdbc.StandardColumnMappings.toLongTimestamp;
+import static io.trino.plugin.jdbc.StandardColumnMappings.toTrinoTimestamp;
 import static io.trino.plugin.jdbc.StandardColumnMappings.varcharWriteFunction;
 import static io.trino.spi.type.TimestampType.TIMESTAMP_MILLIS;
 import static java.lang.String.format;
@@ -51,6 +57,8 @@ public class DB2Client
 {
     private final int varcharMaxLength;
     private static final int DB2_MAX_SUPPORTED_TIMESTAMP_PRECISION = 12;
+    // java.util.LocalDateTime supports up to nanosecond precision
+    private static final int MAX_LOCAL_DATE_TIME_PRECISION = 9;
     private static final String VARCHAR_FORMAT = "VARCHAR(%d)";
 
     @Inject
@@ -102,6 +110,43 @@ public class DB2Client
         }
 
         return super.legacyToPrestoType(session, connection, typeHandle);
+    }
+
+    public static ColumnMapping timestampColumnMapping(TimestampType timestampType)
+    {
+        if (timestampType.getPrecision() <= TimestampType.MAX_SHORT_PRECISION) {
+            return ColumnMapping.longMapping(
+                    timestampType,
+                    timestampReadFunction(timestampType),
+                    timestampWriteFunction(timestampType));
+        }
+        checkArgument(timestampType.getPrecision() <= MAX_LOCAL_DATE_TIME_PRECISION, "Precision is out of range: %s", timestampType.getPrecision());
+        return ColumnMapping.objectMapping(
+                timestampType,
+                longtimestampReadFunction(timestampType),
+                longTimestampWriteFunction(timestampType));
+    }
+
+    public static LongReadFunction timestampReadFunction(TimestampType timestampType)
+    {
+        checkArgument(timestampType.getPrecision() <= TimestampType.MAX_SHORT_PRECISION, "Precision is out of range: %s", timestampType.getPrecision());
+        return (resultSet, columnIndex) -> toTrinoTimestamp(timestampType, resultSet.getTimestamp(columnIndex).toLocalDateTime());
+    }
+
+    /**
+     * Customized timestampReadFunction to convert timestamp type to LocalDateTime type.
+     * Notice that it's because Db2 JDBC driver doesn't support {@link ResetSet#getObject(index, Class<T>)}.
+     *
+     * @param timestampType
+     * @return
+     */
+    private static ObjectReadFunction longtimestampReadFunction(TimestampType timestampType)
+    {
+        checkArgument(timestampType.getPrecision() <= MAX_LOCAL_DATE_TIME_PRECISION,
+                "Precision is out of range: %s", timestampType.getPrecision());
+        return ObjectReadFunction.of(
+                LongTimestamp.class,
+                (resultSet, columnIndex) -> toLongTimestamp(timestampType, resultSet.getTimestamp(columnIndex).toLocalDateTime()));
     }
 
     /**
