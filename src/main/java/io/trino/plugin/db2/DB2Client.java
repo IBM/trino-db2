@@ -21,6 +21,7 @@ import io.trino.plugin.jdbc.JdbcSplit;
 import io.trino.plugin.jdbc.JdbcTypeHandle;
 import io.trino.plugin.jdbc.LongReadFunction;
 import io.trino.plugin.jdbc.ObjectReadFunction;
+import io.trino.plugin.jdbc.ObjectWriteFunction;
 import io.trino.plugin.jdbc.WriteMapping;
 import io.trino.spi.TrinoException;
 import io.trino.spi.connector.ConnectorSession;
@@ -35,6 +36,7 @@ import javax.inject.Inject;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.List;
 import java.util.Optional;
@@ -42,7 +44,7 @@ import java.util.Optional;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Verify.verify;
 import static io.trino.plugin.jdbc.JdbcErrorCode.JDBC_ERROR;
-import static io.trino.plugin.jdbc.StandardColumnMappings.longTimestampWriteFunction;
+import static io.trino.plugin.jdbc.StandardColumnMappings.fromLongTimestamp;
 import static io.trino.plugin.jdbc.StandardColumnMappings.timestampWriteFunction;
 import static io.trino.plugin.jdbc.StandardColumnMappings.timestampWriteFunctionUsingSqlTimestamp;
 import static io.trino.plugin.jdbc.StandardColumnMappings.toLongTimestamp;
@@ -148,6 +150,20 @@ public class DB2Client
         return ObjectReadFunction.of(
                 LongTimestamp.class,
                 (resultSet, columnIndex) -> toLongTimestamp(timestampType, resultSet.getTimestamp(columnIndex).toLocalDateTime()));
+    }
+
+    /**
+     * Customized timestampWriteFunction.
+     * Notice that it's because Db2 JDBC driver doesn't support {@link PreparedStatement#setObject(index, LocalDateTime)}.
+     * @param timestampType
+     * @return
+     */
+    private static ObjectWriteFunction longTimestampWriteFunction(TimestampType timestampType)
+    {
+        checkArgument(timestampType.getPrecision() > TimestampType.MAX_SHORT_PRECISION, "Precision is out of range: %s", timestampType.getPrecision());
+        return ObjectWriteFunction.of(
+                LongTimestamp.class,
+                (statement, index, value) -> statement.setTimestamp(index, Timestamp.valueOf(fromLongTimestamp(value, timestampType.getPrecision()))));
     }
 
     /**
