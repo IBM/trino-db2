@@ -6,6 +6,11 @@ Notice that it requires the connected database to be Db2 10 or Db2 LUW 9.7+ or g
 
 See [DEVELOPMENT](DEVELOPMENT.md) for information on development process.
 
+**Limitation**
+
+It supports read/write Timestamp data type up to precision `9` while
+higher precision will not be preserved. 
+
 ## Connection Configuration
 
 Create new properties file like `<catalog-name>.properties` inside `etc/catalog` dir:
