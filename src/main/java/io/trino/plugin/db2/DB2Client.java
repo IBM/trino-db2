@@ -23,6 +23,7 @@ import io.trino.plugin.jdbc.LongReadFunction;
 import io.trino.plugin.jdbc.ObjectReadFunction;
 import io.trino.plugin.jdbc.ObjectWriteFunction;
 import io.trino.plugin.jdbc.WriteMapping;
+import io.trino.plugin.jdbc.mapping.IdentifierMapping;
 import io.trino.spi.TrinoException;
 import io.trino.spi.connector.ConnectorSession;
 import io.trino.spi.connector.SchemaTableName;
@@ -69,10 +70,11 @@ public class DB2Client
             BaseJdbcConfig config,
             DB2Config db2config,
             ConnectionFactory connectionFactory,
-            TypeManager typeManager)
+            TypeManager typeManager,
+            IdentifierMapping identifierMapping)
             throws SQLException
     {
-        super(config, "\"", connectionFactory);
+        super(config, "\"", connectionFactory, identifierMapping);
         this.varcharMaxLength = db2config.getVarcharMaxLength();
 
         // http://stackoverflow.com/questions/16910791/getting-error-code-4220-with-null-sql-state
@@ -112,7 +114,7 @@ public class DB2Client
                 return Optional.of(timestampColumnMapping(timestampType));
         }
 
-        return super.legacyToPrestoType(session, connection, typeHandle);
+        return super.legacyColumnMapping(session, connection, typeHandle);
     }
 
     public static ColumnMapping timestampColumnMapping(TimestampType timestampType)
