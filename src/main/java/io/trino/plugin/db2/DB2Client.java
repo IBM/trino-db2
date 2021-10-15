@@ -45,12 +45,14 @@ import java.util.Optional;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Verify.verify;
 import static io.trino.plugin.jdbc.JdbcErrorCode.JDBC_ERROR;
-import static io.trino.plugin.jdbc.StandardColumnMappings.fromLongTimestamp;
+import static io.trino.plugin.jdbc.StandardColumnMappings.fromLongTrinoTimestamp;
 import static io.trino.plugin.jdbc.StandardColumnMappings.timestampWriteFunction;
 import static io.trino.plugin.jdbc.StandardColumnMappings.timestampWriteFunctionUsingSqlTimestamp;
-import static io.trino.plugin.jdbc.StandardColumnMappings.toLongTimestamp;
+import static io.trino.plugin.jdbc.StandardColumnMappings.toLongTrinoTimestamp;
 import static io.trino.plugin.jdbc.StandardColumnMappings.toTrinoTimestamp;
 import static io.trino.plugin.jdbc.StandardColumnMappings.varcharWriteFunction;
+import static io.trino.plugin.jdbc.TypeHandlingJdbcSessionProperties.getUnsupportedTypeHandling;
+import static io.trino.plugin.jdbc.UnsupportedTypeHandling.CONVERT_TO_VARCHAR;
 import static io.trino.spi.type.TimestampType.TIMESTAMP_MILLIS;
 import static java.lang.String.format;
 import static java.util.Locale.ENGLISH;
@@ -113,8 +115,10 @@ public class DB2Client
                         .orElse(TIMESTAMP_MILLIS);
                 return Optional.of(timestampColumnMapping(timestampType));
         }
-
-        return super.legacyColumnMapping(session, connection, typeHandle);
+        if (getUnsupportedTypeHandling(session) == CONVERT_TO_VARCHAR) {
+            return mapToUnboundedVarchar(typeHandle);
+        }
+        return Optional.empty();
     }
 
     public static ColumnMapping timestampColumnMapping(TimestampType timestampType)
@@ -151,7 +155,7 @@ public class DB2Client
                 "Precision is out of range: %s", timestampType.getPrecision());
         return ObjectReadFunction.of(
                 LongTimestamp.class,
-                (resultSet, columnIndex) -> toLongTimestamp(timestampType, resultSet.getTimestamp(columnIndex).toLocalDateTime()));
+                (resultSet, columnIndex) -> toLongTrinoTimestamp(timestampType, resultSet.getTimestamp(columnIndex).toLocalDateTime()));
     }
 
     /**
@@ -165,7 +169,7 @@ public class DB2Client
         checkArgument(timestampType.getPrecision() > TimestampType.MAX_SHORT_PRECISION, "Precision is out of range: %s", timestampType.getPrecision());
         return ObjectWriteFunction.of(
                 LongTimestamp.class,
-                (statement, index, value) -> statement.setTimestamp(index, Timestamp.valueOf(fromLongTimestamp(value, timestampType.getPrecision()))));
+                (statement, index, value) -> statement.setTimestamp(index, Timestamp.valueOf(fromLongTrinoTimestamp(value, timestampType.getPrecision()))));
     }
 
     /**
