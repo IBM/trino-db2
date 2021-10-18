@@ -27,6 +27,7 @@ import io.trino.plugin.jdbc.mapping.IdentifierMapping;
 import io.trino.spi.TrinoException;
 import io.trino.spi.connector.ConnectorSession;
 import io.trino.spi.connector.SchemaTableName;
+import io.trino.spi.type.Decimals;
 import io.trino.spi.type.LongTimestamp;
 import io.trino.spi.type.TimestampType;
 import io.trino.spi.type.Type;
@@ -45,13 +46,32 @@ import java.util.Optional;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Verify.verify;
 import static io.trino.plugin.jdbc.JdbcErrorCode.JDBC_ERROR;
-import static io.trino.plugin.jdbc.StandardColumnMappings.fromLongTimestamp;
+import static io.trino.plugin.jdbc.StandardColumnMappings.bigintColumnMapping;
+import static io.trino.plugin.jdbc.StandardColumnMappings.booleanColumnMapping;
+import static io.trino.plugin.jdbc.StandardColumnMappings.dateColumnMapping;
+import static io.trino.plugin.jdbc.StandardColumnMappings.decimalColumnMapping;
+import static io.trino.plugin.jdbc.StandardColumnMappings.defaultCharColumnMapping;
+import static io.trino.plugin.jdbc.StandardColumnMappings.defaultVarcharColumnMapping;
+import static io.trino.plugin.jdbc.StandardColumnMappings.doubleColumnMapping;
+import static io.trino.plugin.jdbc.StandardColumnMappings.fromLongTrinoTimestamp;
+import static io.trino.plugin.jdbc.StandardColumnMappings.integerColumnMapping;
+import static io.trino.plugin.jdbc.StandardColumnMappings.realColumnMapping;
+import static io.trino.plugin.jdbc.StandardColumnMappings.smallintColumnMapping;
+import static io.trino.plugin.jdbc.StandardColumnMappings.timeColumnMappingUsingSqlTime;
 import static io.trino.plugin.jdbc.StandardColumnMappings.timestampWriteFunction;
 import static io.trino.plugin.jdbc.StandardColumnMappings.timestampWriteFunctionUsingSqlTimestamp;
-import static io.trino.plugin.jdbc.StandardColumnMappings.toLongTimestamp;
+import static io.trino.plugin.jdbc.StandardColumnMappings.tinyintColumnMapping;
+import static io.trino.plugin.jdbc.StandardColumnMappings.toLongTrinoTimestamp;
 import static io.trino.plugin.jdbc.StandardColumnMappings.toTrinoTimestamp;
+import static io.trino.plugin.jdbc.StandardColumnMappings.varbinaryColumnMapping;
+import static io.trino.plugin.jdbc.StandardColumnMappings.varcharColumnMapping;
 import static io.trino.plugin.jdbc.StandardColumnMappings.varcharWriteFunction;
+import static io.trino.plugin.jdbc.TypeHandlingJdbcSessionProperties.getUnsupportedTypeHandling;
+import static io.trino.plugin.jdbc.UnsupportedTypeHandling.CONVERT_TO_VARCHAR;
+import static io.trino.spi.type.DecimalType.createDecimalType;
 import static io.trino.spi.type.TimestampType.TIMESTAMP_MILLIS;
+import static io.trino.spi.type.VarcharType.createUnboundedVarcharType;
+import static java.lang.Math.max;
 import static java.lang.String.format;
 import static java.util.Locale.ENGLISH;
 import static java.util.stream.Collectors.joining;
@@ -107,6 +127,66 @@ public class DB2Client
         }
 
         switch (typeHandle.getJdbcType()) {
+            case Types.BIT:
+            case Types.BOOLEAN:
+                return Optional.of(booleanColumnMapping());
+
+            case Types.TINYINT:
+                return Optional.of(tinyintColumnMapping());
+
+            case Types.SMALLINT:
+                return Optional.of(smallintColumnMapping());
+
+            case Types.INTEGER:
+                return Optional.of(integerColumnMapping());
+
+            case Types.BIGINT:
+                return Optional.of(bigintColumnMapping());
+
+            case Types.REAL:
+                return Optional.of(realColumnMapping());
+
+            case Types.FLOAT:
+            case Types.DOUBLE:
+                return Optional.of(doubleColumnMapping());
+
+            case Types.NUMERIC:
+            case Types.DECIMAL:
+                int decimalDigits = typeHandle.getRequiredDecimalDigits();
+                int precision = typeHandle.getRequiredColumnSize() + max(-decimalDigits, 0); // Map decimal(p, -s) (negative scale) to decimal(p+s, 0).
+                if (precision > Decimals.MAX_PRECISION) {
+                    break;
+                }
+                return Optional.of(decimalColumnMapping(createDecimalType(precision, max(decimalDigits, 0))));
+
+            case Types.CHAR:
+            case Types.NCHAR:
+                return Optional.of(defaultCharColumnMapping(typeHandle.getRequiredColumnSize(), false));
+
+            case Types.VARCHAR:
+                int columnSize = typeHandle.getRequiredColumnSize();
+                if (columnSize == -1) {
+                    return Optional.of(varcharColumnMapping(createUnboundedVarcharType(), true));
+                }
+                return Optional.of(defaultVarcharColumnMapping(columnSize, true));
+
+            case Types.NVARCHAR:
+            case Types.LONGVARCHAR:
+            case Types.LONGNVARCHAR:
+                return Optional.of(defaultVarcharColumnMapping(typeHandle.getRequiredColumnSize(), false));
+
+            case Types.BINARY:
+            case Types.VARBINARY:
+            case Types.LONGVARBINARY:
+                return Optional.of(varbinaryColumnMapping());
+
+            case Types.DATE:
+                return Optional.of(dateColumnMapping());
+
+            case Types.TIME:
+                // TODO Consider using `StandardColumnMappings.timeColumnMapping`
+                return Optional.of(timeColumnMappingUsingSqlTime());
+
             case Types.TIMESTAMP:
                 TimestampType timestampType = typeHandle.getDecimalDigits()
                         .map(TimestampType::createTimestampType)
@@ -114,7 +194,10 @@ public class DB2Client
                 return Optional.of(timestampColumnMapping(timestampType));
         }
 
-        return super.legacyColumnMapping(session, connection, typeHandle);
+        if (getUnsupportedTypeHandling(session) == CONVERT_TO_VARCHAR) {
+            return mapToUnboundedVarchar(typeHandle);
+        }
+        return Optional.empty();
     }
 
     public static ColumnMapping timestampColumnMapping(TimestampType timestampType)
@@ -151,7 +234,7 @@ public class DB2Client
                 "Precision is out of range: %s", timestampType.getPrecision());
         return ObjectReadFunction.of(
                 LongTimestamp.class,
-                (resultSet, columnIndex) -> toLongTimestamp(timestampType, resultSet.getTimestamp(columnIndex).toLocalDateTime()));
+                (resultSet, columnIndex) -> toLongTrinoTimestamp(timestampType, resultSet.getTimestamp(columnIndex).toLocalDateTime()));
     }
 
     /**
@@ -165,7 +248,7 @@ public class DB2Client
         checkArgument(timestampType.getPrecision() > TimestampType.MAX_SHORT_PRECISION, "Precision is out of range: %s", timestampType.getPrecision());
         return ObjectWriteFunction.of(
                 LongTimestamp.class,
-                (statement, index, value) -> statement.setTimestamp(index, Timestamp.valueOf(fromLongTimestamp(value, timestampType.getPrecision()))));
+                (statement, index, value) -> statement.setTimestamp(index, Timestamp.valueOf(fromLongTrinoTimestamp(value, timestampType.getPrecision()))));
     }
 
     /**
