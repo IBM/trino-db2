@@ -8,7 +8,7 @@
     mvn clean install
 
 ## Release
-If creating a new release, first update source code in this repo with PR process, then build the plugin with the command above and make sure to include the resulting archive `target/trino-db2-[version].zip` in your release binaries.
+First update the `main` branch of this repo via PR process. Then, go to https://github.com/IBM/trino-db2/releases to draft your release. Configure the release to create a new branch named after the Trino version (e.g. 372). Before publishing the release, build the plugin locally with `mvn clean install`, and upload the resulting archive `target/trino-db2-[version].zip` to the release binaries. Then, you may click "publish release".
 
 ## Build a container image including this connector
 
