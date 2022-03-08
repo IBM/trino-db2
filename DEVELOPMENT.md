@@ -7,6 +7,9 @@
 
     mvn clean install
 
+## Release
+If creating a new release, first update source code in this repo with PR process, then build the plugin with the command above and make sure to include the resulting archive `target/trino-db2-[version].zip` in your release binaries.
+
 ## Build a container image including this connector
 
 It uses multi-stage build and the trinodb container image from community as the
