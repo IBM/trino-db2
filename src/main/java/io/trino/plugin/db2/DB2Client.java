@@ -113,18 +113,6 @@ public class DB2Client
     private static final int MAX_LOCAL_DATE_TIME_PRECISION = 9;
     private static final String VARCHAR_FORMAT = "VARCHAR(%d)";
 
-    private static final Map<Type, WriteMapping> WRITE_MAPPINGS = ImmutableMap.<Type, WriteMapping>builder()
-            .put(BOOLEAN, WriteMapping.booleanMapping("boolean", booleanWriteFunction()))
-            .put(BIGINT, WriteMapping.longMapping("bigint", bigintWriteFunction()))
-            .put(INTEGER, WriteMapping.longMapping("integer", integerWriteFunction()))
-            .put(SMALLINT, WriteMapping.longMapping("smallint", smallintWriteFunction()))
-            .put(TINYINT, WriteMapping.longMapping("tinyint", tinyintWriteFunction()))
-            .put(DOUBLE, WriteMapping.doubleMapping("double precision", doubleWriteFunction()))
-            .put(REAL, WriteMapping.longMapping("real", realWriteFunction()))
-            .put(VARBINARY, WriteMapping.sliceMapping("varbinary", varbinaryWriteFunction()))
-            .put(DATE, WriteMapping.longMapping("date", dateWriteFunctionUsingSqlDate()))
-            .build();
-
     @Inject
     public DB2Client(
             BaseJdbcConfig config,
@@ -352,9 +340,32 @@ public class DB2Client
             return WriteMapping.objectMapping(dataType, longDecimalWriteFunction(decimalType));
         }
 
-        WriteMapping writeMapping = WRITE_MAPPINGS.get(type);
-        if (writeMapping != null) {
-            return writeMapping;
+        if (type == BOOLEAN) {
+            return WriteMapping.booleanMapping("boolean", booleanWriteFunction());
+        }
+        if (type == TINYINT) {
+            return WriteMapping.longMapping("tinyint", tinyintWriteFunction());
+        }
+        if (type == SMALLINT) {
+            return WriteMapping.longMapping("smallint", smallintWriteFunction());
+        }
+        if (type == INTEGER) {
+            return WriteMapping.longMapping("integer", integerWriteFunction());
+        }
+        if (type == BIGINT) {
+            return WriteMapping.longMapping("bigint", bigintWriteFunction());
+        }
+        if (type == REAL) {
+            return WriteMapping.longMapping("real", realWriteFunction());
+        }
+        if (type == DOUBLE) {
+            return WriteMapping.doubleMapping("double precision", doubleWriteFunction());
+        }
+        if (type == VARBINARY) {
+            return WriteMapping.sliceMapping("varbinary", varbinaryWriteFunction());
+        }
+        if (type == DATE) {
+            WriteMapping.longMapping("date", dateWriteFunctionUsingSqlDate()
         }
         throw new TrinoException(NOT_SUPPORTED, "Unsupported column type: " + type.getDisplayName());
     }
