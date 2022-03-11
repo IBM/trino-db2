@@ -101,7 +101,6 @@ import static java.lang.String.format;
 import static java.util.Locale.ENGLISH;
 import static java.util.stream.Collectors.joining;
 
-
 public class DB2Client
         extends BaseJdbcClient
 {
