@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>io.trino</groupId>
 		<artifactId>trino-root</artifactId>
-		<version>364</version>
+		<version>373</version>
 	</parent>
 
 	<artifactId>trino-db2</artifactId>
