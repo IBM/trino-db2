@@ -17,6 +17,7 @@ jobs:
         java-version:
         - 11
         - 15
+        - 17
     env:
       MAVEN_SKIP_CHECKS_AND_DOCS: -Dair.check.skip-all=true -Dmaven.javadoc.skip=true
       MAVEN_FAST_INSTALL: -DskipTests -Dair.check.skip-all=true -Dmaven.javadoc.skip=true -B -q -T C1
@@ -35,7 +36,7 @@ jobs:
 
     - name: Release
       uses: softprops/action-gh-release@v1
-      if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.java-version == '11' }}
+      if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.java-version == '17' }}
       with:
         files: |
           target/trino-db2-*.zip
