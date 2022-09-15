@@ -15,8 +15,6 @@ jobs:
       fail-fast: false
       matrix:
         java-version:
-        - 11
-        - 15
         - 17
     env:
       MAVEN_SKIP_CHECKS_AND_DOCS: -Dair.check.skip-all=true -Dmaven.javadoc.skip=true
